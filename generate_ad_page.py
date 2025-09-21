@@ -1,15 +1,13 @@
-# generate_ad_page.py
-
 import requests
 import json
 from datetime import datetime
 import os
 
-# --- 애드픽 API 설정 (!!!여기 니 affid가 맞는지 다시 한번 확인하고, 아니면 수정해줘!!!) ---
+# --- 애드픽 API 설정 (!!!니 affid가 맞는지 꼭 확인하고, 아니면 수정해줘!!!) ---
 AFFID = '2efa07'
 API_URL = f"https://adpick.co.kr/apis/offers.php?affid={AFFID}&order=randone"
 
-# --- User-Agent 추가: GitHub Actions의 API 호출이 브라우저처럼 보이게 하기 위함 ---
+# --- User-Agent 추가: GitHub Actions 등 서버 환경에서 차단 방지를 위한 설정 ---
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
 }
@@ -60,14 +58,12 @@ HTML_TEMPLATE = """
 </html>
 """
 
-# GitHub Actions가 이 스크립트를 실행하면, content-manager 레포 루트에 'ads' 폴더를 만들고 그 안에 HTML 파일을 저장함.
 OUTPUT_DIR = "ads"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def fetch_and_generate():
     print("[시작] 애드픽 API 호출 및 HTML 생성 중...")
     try:
-        # requests.get() 호출 시 headers 인자 추가!
         res = requests.get(API_URL, headers=headers)
         res.raise_for_status()
         data = res.json()

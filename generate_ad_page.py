@@ -1,6 +1,6 @@
 import requests
 import json
-from datetime import datetime
+from datetime import datetime # (포동이 팁: 여기 datetime.datetime.now()는 from datetime import datetime 덕분에 잘 작동해!)
 import os
 
 # --- 애드픽 API 설정 (!!!니 affid가 맞는지 꼭 확인하고, 아니면 수정해줘!!!) ---
@@ -61,6 +61,51 @@ HTML_TEMPLATE = """
 OUTPUT_DIR = "ads"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# --- sitemap.xml 관련 상수 추가 ---
+# 이 BASE_URL은 니 GitHub Pages의 실제 루트 URL을 가리켜야 해!
+# https://rkskqdl-a11y.github.io/content-manager/ 가 니 웹사이트의 시작 주소일 거야!
+BASE_URL = "https://rkskqdl-a11y.github.io/content-manager/"
+SITEMAP_FILENAME = "sitemap.xml" # 루트 폴더에 생성될 sitemap.xml 파일명
+
+
+# --- sitemap.xml 생성 함수 추가 ---
+def generate_sitemap():
+    print("[시작] sitemap.xml 생성 중...")
+    
+    # 'ads' 폴더 안의 모든 HTML 파일을 찾아서 URL 리스트 만들기
+    all_ad_pages = []
+    if os.path.exists(OUTPUT_DIR):
+        for filename in os.listdir(OUTPUT_DIR):
+            if filename.endswith(".html"):
+                all_ad_pages.append(f"{BASE_URL}{OUTPUT_DIR}/{filename}")
+    
+    # 루트 페이지 (content-manager 기본 페이지)도 포함
+    all_pages = [BASE_URL] + sorted(all_ad_pages) # 항상 루트 페이지가 먼저 오도록 정렬
+
+    # sitemap.xml 내용 생성
+    sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemap_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    for url in all_pages:
+        sitemap_content += '  <url>\n'
+        sitemap_content += f'    <loc>{url}</loc>\n'
+        # lastmod는 sitemap이 생성된 시간으로 통일 (매번 새롭게 만드니까)
+        sitemap_content += f'    <lastmod>{datetime.now().strftime("%Y-%m-%dT%H:%M:%S+00:00")}</lastmod>\n'
+        sitemap_content += '    <changefreq>daily</changefreq>\n' # 매일 업데이트되니까 daily로
+        sitemap_content += '    <priority>0.8</priority>\n' # 중요도 좀 높게
+        sitemap_content += '  </url>\n'
+    
+    sitemap_content += '</urlset>\n'
+    
+    # sitemap.xml 파일을 content-manager 레포의 루트에 저장
+    # generate_ad_page.py 파일이 있는 같은 위치에 sitemap.xml 생성
+    root_sitemap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), SITEMAP_FILENAME)
+    with open(root_sitemap_path, "w", encoding="utf-8") as f:
+        f.write(sitemap_content)
+    
+    print(f"[완료] sitemap.xml 업데이트됨: {root_sitemap_path}")
+
+
 def fetch_and_generate():
     print("[시작] 애드픽 API 호출 및 HTML 생성 중...")
     try:
@@ -100,5 +145,8 @@ def fetch_and_generate():
         print(f"오류 발생: {e}")
         return None
 
+# --- 메인 실행 로직 수정: fetch_and_generate 후 sitemap도 생성하도록 ---
 if __name__ == "__main__":
-    fetch_and_generate()
+    generated_file = fetch_and_generate() # HTML 생성 먼저 시도
+    if generated_file: # HTML 파일이 성공적으로 생성되었으면
+        generate_sitemap() # sitemap도 업데이트!

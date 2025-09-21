@@ -3,11 +3,11 @@ import json
 import os
 import datetime
 
-# --- 애드픽 API 설정 (니 affid 꼭 확인해!) ---
+# --- 애드픽 API 설정 (니 affid 꼭 확인!) ---
 AFFID = '2efa07'
 API_URL = f"https://adpick.co.kr/apis/offers.php?affid={AFFID}&order=rand"
 
-# User-Agent 헤더 (봇 차단 방지용)
+# User-Agent 헤더로 봇 차단 우회
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
 }
@@ -17,6 +17,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 PUBLISHED_FILE = "published_offers.json"
 
+# 모든 컨텐츠에 어울리는 자연스러운 구어체 후킹 문구
 DEFAULT_PROMO = "딱 내 스타일~ 오늘 바로 써봐!"
 BUTTON_TEXT = "지금 바로 체험하기 🚀"
 

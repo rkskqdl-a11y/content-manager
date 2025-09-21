@@ -47,7 +47,7 @@ HTML_TEMPLATE = """
         <img src="{icon_url}" alt="{app_title} 아이콘" />
         <div class="ad-headline">"<strong>{ad_headline}</strong>"</div>
         <p class="promo-text">{promo_text}</p>
-        <a href="{tracking_link}" target="_blank" class="btn-link">캠페인 참여하기</a>
+        <a href="{tracking_link}" target="_blank" class="btn-link">내용 보기</a>
       </div>
     </main>
     <footer class="disclaimer">

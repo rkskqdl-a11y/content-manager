@@ -35,6 +35,10 @@ SITEMAP_FILENAME = "sitemap.xml"
 DEFAULT_PROMO = "딱 내 스타일~ 오늘 바로 써봐!"
 BUTTON_TEXT = "지금 바로 체험하기 🚀"
 
+# --- [포동이 수정!] --- 하루에 발행할 최대 캠페인 수 설정
+MAX_CAMPAIGNS_PER_RUN = 5 
+# --- [포동이 수정 끝!] ---
+
 def load_published():
     if os.path.exists(PUBLISHED_FILE):
         try:
@@ -65,16 +69,24 @@ def fetch_campaigns():
         print(f"[에러] API 호출 실패: {e}")
         return []
 
-def select_new_campaign(campaigns, published):
+# --- [포동이 수정!] --- 여러 개의 신규 캠페인을 선택하도록 함수 수정
+def select_n_new_campaigns(campaigns, published, limit):
+    new_campaigns = []
     for camp in campaigns:
         offer_id = camp.get("apOffer")
         if not offer_id:
             continue
         if offer_id not in published:
-            print(f"[선택] 신규 캠페인: {camp.get('apAppTitle', offer_id)}")
-            return camp
-    print("[정보] 신규 캠페인 없음.")
-    return None
+            new_campaigns.append(camp)
+            if len(new_campaigns) >= limit:
+                break # 설정된 개수만큼 찾았으면 중단
+    
+    if new_campaigns:
+        print(f"[선택] {len(new_campaigns)}개의 신규 캠페인 발견.")
+    else:
+        print("[정보] 신규 캠페인 없음.")
+    return new_campaigns
+# --- [포동이 수정 끝!] ---
 
 def generate_html(data):
     app_title = data.get('apAppTitle', '새 캠페인')
@@ -118,7 +130,7 @@ def generate_html(data):
         <h2>{app_title}</h2>
         <img src="{icon_url}" alt="{app_title} 아이콘" />
         <p class="headline">{headline}</p>
-        <p class="promo-text">{promo}</p>
+        <p class.promo-text">{promo}</p>
         {remain_html}
         <a href="{tracking_link}" target="_blank" class="button">{BUTTON_TEXT}</a>
         <p class="footer">이 포스팅은 애드픽 캠페인 참여로 작성되었으며, 수익 발생 시 대가를 받을 수 있습니다.</p>
@@ -164,7 +176,8 @@ def generate_sitemap():
     
     sitemap_content += '</urlset>\n'
     
-    root_sitemap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), SITEMAP_FILENAME)
+    # root_sitemap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), SITEMAP_FILENAME) # 기존 코드
+    root_sitemap_path = os.path.join(OUTPUT_DIR, SITEMAP_FILENAME) # --- [포동이 수정!] --- sitemap.xml을 ads 폴더 내에 생성하도록 수정
     with open(root_sitemap_path, "w", encoding="utf-8") as f:
         f.write(sitemap_content)
     
@@ -178,16 +191,29 @@ def main():
     if not campaigns:
         print("캠페인 없음, 종료!")
         return
-    new_camp = select_new_campaign(campaigns, published_offers)
-    if not new_camp:
+
+    # --- [포동이 수정!] --- 최대 발행 개수만큼 신규 캠페인 선택
+    new_campaigns_to_publish = select_n_new_campaigns(campaigns, published_offers, MAX_CAMPAIGNS_PER_RUN)
+
+    if not new_campaigns_to_publish:
         print("새 캠페인 없음!")
         return
-    html = generate_html(new_camp)
-    offer_id = new_camp.get("apOffer")
-    filename = save_html(html, new_camp.get('apAppTitle', ''), offer_id)
-    published_offers.add(offer_id)
-    save_published(published_offers)
-    print(f"'{filename}' 캠페인 자동발행 완료!")
+
+    published_count_current_run = 0
+    for new_camp in new_campaigns_to_publish:
+        app_title = new_camp.get('apAppTitle', '')
+        offer_id = new_camp.get("apOffer")
+
+        html = generate_html(new_camp)
+        filename = save_html(html, app_title, offer_id)
+        
+        published_offers.add(offer_id) # 발행된 캠페인 ID를 published_offers 세트에 추가
+        print(f"'{filename}' 캠페인 자동발행 완료!")
+        published_count_current_run += 1
+        
+    save_published(published_offers) # 한 번의 실행에서 발행된 모든 캠페인을 저장
+    print(f"총 {published_count_current_run}개 캠페인 발행 및 기록 완료!")
+    # --- [포동이 수정 끝!] ---
     
     generate_sitemap() # 새 HTML 생성 후, sitemap.xml도 업데이트!
 

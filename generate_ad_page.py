@@ -8,19 +8,13 @@ AFFID = '2efa07'
 API_URL = f"https://adpick.co.kr/apis/offers.php?affid={AFFID}&order=randone"
 
 # --- User-Agent를 포함한 브라우저급 헤더 추가: 봇 차단 강력 우회 시도! ---
+# --- User-Agent를 포함한 브라우저급 헤더 추가: 봇 차단 강력 우회 시도! ---
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-    # 나머지 줄은 주석 처리하거나 지워
-    # 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    # 'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-    # 'Accept-Encoding': 'gzip, deflate, br',
-    # 'Connection': 'keep-alive',
-    # 'Upgrade-Insecure-Requests': '1',
-    # 'Sec-Fetch-Dest': 'document',
-    # 'Sec-Fetch-Mode': 'navigate',
-    # 'Sec-Fetch-Site': 'none',
-    # 'Sec-Fetch-User': '?1',
-    # 'Cache-Control': 'max-age=0',
+    'Referer': 'https://adpick.co.kr/', # ⭐ 여기 Referer 추가!
+    'Accept': '*/*', # 모든 타입 허용 (가장 보편적인 요청)
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
 }
 OUTPUT_DIR = "ads"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
